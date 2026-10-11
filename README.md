@@ -1,2 +1,58 @@
 # small-language-models
-Repository for a small language model talk
+Repository for a small language model talk: hands-on examples of what small language models can (and cannot) do.
+
+## Setup
+
+Requires [uv](https://docs.astral.sh/uv/) and a running [Ollama](https://ollama.com) server.
+
+```bash
+uv sync                                    # creates .venv with all dependencies
+uv run jupyter lab                         # notebooks live in notebooks/
+```
+
+## Layout
+
+```
+src/slm/
+  data/          dataset loaders (downloaded on first use into data/)
+  inference/     inference backends (Ollama)
+  evaluation/    task-specific evaluation (LLM classifier, metrics)
+scripts/         command-line experiment runners
+notebooks/       walkthroughs and result analysis
+results/         experiment outputs (per-example predictions are git-ignored)
+```
+
+## Experiments
+
+### 1. BANKING77 intent classification vs. model size
+
+Zero-shot classification of the BANKING77 test set (3,080 queries, 77 intents) with Qwen models of
+increasing size. The label set is enforced via Ollama structured outputs (JSON schema `enum`);
+thinking is off and decoding is greedy.
+
+* Notebook: `notebooks/01_banking77_qwen_scaling.ipynb`
+* Script: `uv run python scripts/run_banking77.py` (Qwen3.5 0.8b, 2b, 4b, 9b on the full test set;
+  `--per-class 5` for a quick balanced subset, `--models ...` for other ladders)
+
+Predictions are cached per model in `results/banking77/<mode>_<think|no-think>/`, so interrupted runs resume.
+Latencies are measured with `--workers` concurrent requests (default 4); set
+`OLLAMA_NUM_PARALLEL` on the server accordingly.
+
+### 2. Output control and reasoning
+
+* **Structured vs. open answers**: constrained decoding (JSON schema `enum`) vs. plain JSON vs. free text,
+  scored with strict and lenient label matching.
+* **Reasoning**: thinking mode on vs. off for a small and a medium model.
+* **Thinking budget**: budget forcing (cut the reasoning after 256 ... 8k tokens and force an answer) and
+  extension of traces that hit the 4k limit, giving accuracy as a function of the thinking budget.
+* Notebook: `notebooks/02_banking77_output_control_and_reasoning.ipynb`
+* Scripts: `scripts/run_banking77.py --mode {structured,json,free} [--think]`,
+  `scripts/run_thinking_budget.py` (needs the cached `--think --per-class 5` runs)
+
+### 3. Prompt optimization with DSPy
+
+The same task as a DSPy program: zero-shot, chain of thought, random few-shot and MIPROv2 (a larger model
+proposes instructions for the small task model).
+
+* Notebook: `notebooks/03_banking77_dspy.ipynb`
+* Script: `uv run python scripts/run_dspy_banking77.py --task-model qwen3.5:2b --prompt-model qwen3.5:9b`

@@ -1,0 +1,67 @@
+{
+  "traces": [],
+  "train": [],
+  "demos": [
+    {
+      "augmented": true,
+      "text": "How long until transfers from Europe go through?",
+      "label": "transfer_timing"
+    },
+    {
+      "augmented": true,
+      "text": "What currencies and methods can i use to top up my account?",
+      "label": "supported_cards_and_currencies"
+    },
+    {
+      "augmented": true,
+      "text": "On my app I can see that a direct debit payment that I didn't do, appears.",
+      "label": "direct_debit_payment_not_recognised"
+    },
+    {
+      "augmented": true,
+      "text": "I withdrew cash but it still shows as pending?",
+      "label": "pending_cash_withdrawal"
+    },
+    {
+      "text": "I just got an email in confirming my purchase with my card. I login to the mobile app on the card and found out there are several purchase were made without me aware of it. Evidently someone had stole my card information and made these fraudulent purchase. I need the transaction to be reverse and have my card suspended.",
+      "label": "compromised_card",
+      "idx": 4463
+    },
+    {
+      "text": "I need to make my card PIN a different number",
+      "label": "change_pin",
+      "idx": 6887
+    },
+    {
+      "text": "What kind of fees will I pay when I transfer?",
+      "label": "transfer_fee_charged",
+      "idx": 7174
+    },
+    {
+      "text": "If the ATM only gave me 10 pounds instead of the 30 I requested, what do I do?",
+      "label": "wrong_amount_of_cash_received",
+      "idx": 2437
+    }
+  ],
+  "signature": {
+    "instructions": "You are an intelligent assistant designed to classify customer support queries for a digital banking application. Your task is to analyze the user's input text, which often contains urgent or informal language regarding transactional anomalies, security threats, card issues, or account discrepancies. \n\nBased on the semantic meaning and specific keywords in the query, map the input to one of the following predefined intent labels:\n- `card_linking`: Queries about linking a new card or similar actions.\n- `exchange_rate`: Questions regarding currency conversion rates, how to determine them, or current rates during an exchange.\n\nIf the input text matches the criteria for one of these categories, respond ONLY with the corresponding label name (e.g., \"card_linking\" or \"exchange_rate\"). Do not include any explanations, punctuation, or extra text. If the intent does not fit these specific categories, indicate that no match was found within the provided scope (or adhere to your training for default behavior if defined, but prioritize exact matches for the given examples).\n\nExamples:\nInput: \"Show me how to link the new card,\" -> Output: \"card_linking\"\nInput: \"How do you determine your exchange rates?\" -> Output: \"exchange_rate\"\nInput: \"When exchanging, how much are the rates?\" -> Output: \"exchange_rate\"\n\nNow, classify the following input:\n{{input_text}}",
+    "fields": [
+      {
+        "prefix": "Text:",
+        "description": "customer message"
+      },
+      {
+        "prefix": "Label:",
+        "description": "intent of the message"
+      }
+    ]
+  },
+  "lm": null,
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.12",
+      "dspy": "3.4.0",
+      "cloudpickle": "3.1"
+    }
+  }
+}
