@@ -1,0 +1,26 @@
+{
+  "traces": [],
+  "train": [],
+  "demos": [],
+  "signature": {
+    "instructions": "Classify the intent of a customer message sent to a bank.",
+    "fields": [
+      {
+        "prefix": "Text:",
+        "description": "customer message"
+      },
+      {
+        "prefix": "Label:",
+        "description": "intent of the message"
+      }
+    ]
+  },
+  "lm": null,
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.12",
+      "dspy": "3.4.0",
+      "cloudpickle": "3.1"
+    }
+  }
+}

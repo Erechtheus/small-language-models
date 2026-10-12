@@ -56,6 +56,7 @@ proposes instructions for the small task model).
 
 * Notebook: `notebooks/03_banking77_dspy.ipynb`
 * Script: `uv run python scripts/run_dspy_banking77.py --task-model qwen3.5:2b --prompt-model qwen3.5:9b`
+* Other models (zero-shot and few-shot only): `uv run python scripts/run_dspy_banking77.py --task-model qwen3.5:4b --prompt-model qwen3.5:4b --programs zero-shot few-shot`
 
 ### 4. Calibration: does a small model know when it is wrong?
 
@@ -74,3 +75,11 @@ Qwen ladder.
 
 * Notebook: `notebooks/05_banking77_reasoning_effort.ipynb`
 * Script: `uv run python scripts/run_banking77.py --models gpt-oss:20b --effort {low,medium,high} --per-class 5 --logprobs`
+
+### 6. Batch prompting
+
+Several numbered queries per call (1 to 40), with one constrained label per query, for `qwen3.5:2b`, `4b`, `9b` and `qwen3.6:35b-a3b`: accuracy vs. batch size,
+by position in the batch, spill-over between neighbouring queries, and the saving in prompt tokens and time.
+
+* Notebook: `notebooks/06_banking77_batching.ipynb`
+* Script: `uv run python scripts/run_batching.py --models qwen3.5:2b qwen3.5:4b qwen3.5:9b qwen3.6:35b-a3b --batch-sizes 1 5 10 20 40 --seeds 0 1`

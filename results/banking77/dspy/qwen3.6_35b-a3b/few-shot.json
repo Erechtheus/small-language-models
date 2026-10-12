@@ -1,0 +1,107 @@
+{
+  "traces": [],
+  "train": [],
+  "demos": [
+    {
+      "text": "Hello, I just checked my card transactions and saw that I was charged twice for a restaurant visit I did earlier this week. Is it possible to remove one of them and get my false paid money pack?",
+      "label": "transaction_charged_twice",
+      "idx": 6353
+    },
+    {
+      "text": "Can I change my PIN at my local bank?",
+      "label": "change_pin",
+      "idx": 6892
+    },
+    {
+      "text": "How long does it take for a cash withdrawal to show?",
+      "label": "pending_cash_withdrawal",
+      "idx": 767
+    },
+    {
+      "text": "My card needs to be topped up.",
+      "label": "topping_up_by_card",
+      "idx": 4242
+    },
+    {
+      "text": "In what way can I use the disposable cards?",
+      "label": "get_disposable_virtual_card",
+      "idx": 8410
+    },
+    {
+      "text": "I would like to get a physical card, but I don't know how. Can you help me?",
+      "label": "order_physical_card",
+      "idx": 8061
+    },
+    {
+      "text": "How long will it take for the money to reach my account?",
+      "label": "transfer_timing",
+      "idx": 6672
+    },
+    {
+      "text": "I can't find my code",
+      "label": "passcode_forgotten",
+      "idx": 4850
+    },
+    {
+      "text": "can i top up with check?",
+      "label": "top_up_by_cash_or_cheque",
+      "idx": 7966
+    },
+    {
+      "text": "my payment was rejected",
+      "label": "declined_card_payment",
+      "idx": 5896
+    },
+    {
+      "text": "Are top-ups allowed using Apple Pay?",
+      "label": "apple_pay_or_google_pay",
+      "idx": 9699
+    },
+    {
+      "text": "I don't recognize a purchase that was made with my card.",
+      "label": "card_payment_not_recognised",
+      "idx": 3505
+    },
+    {
+      "text": "The exchange rate for me was wrong when I was abroad.",
+      "label": "wrong_exchange_rate_for_cash_withdrawal",
+      "idx": 8307
+    },
+    {
+      "text": "I want to revert a transaction I did",
+      "label": "cancel_transfer",
+      "idx": 2099
+    },
+    {
+      "text": "What ATM machines allow this card?",
+      "label": "atm_support",
+      "idx": 4568
+    },
+    {
+      "text": "How old must I be to open an account?",
+      "label": "age_limit",
+      "idx": 1608
+    }
+  ],
+  "signature": {
+    "instructions": "Classify the intent of a customer message sent to a bank.",
+    "fields": [
+      {
+        "prefix": "Text:",
+        "description": "customer message"
+      },
+      {
+        "prefix": "Label:",
+        "description": "intent of the message"
+      }
+    ]
+  },
+  "lm": null,
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.12",
+      "dspy": "3.4.0",
+      "cloudpickle": "3.1"
+    }
+  }
+}
