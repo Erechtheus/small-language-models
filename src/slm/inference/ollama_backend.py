@@ -69,7 +69,9 @@ class OllamaBackend:
             if not pull:
                 raise RuntimeError(f"Model {self.model!r} not available locally (ollama pull {self.model})")
             self.client.pull(self.model)
-        self.client.generate(model=self.model, prompt="", keep_alive=self.keep_alive)
+        # same num_ctx as the later calls: a different context size makes Ollama reload the model
+        self.client.generate(model=self.model, prompt="", keep_alive=self.keep_alive,
+                             options={"num_ctx": self.options["num_ctx"]})
 
     def chat(self, messages: list[dict[str, str]], format: dict[str, Any] | str | None = None) -> Completion:
         start = time.perf_counter()
