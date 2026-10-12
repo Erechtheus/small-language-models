@@ -5,6 +5,7 @@ Examples:
     uv run python scripts/run_banking77.py --models qwen3:0.6b qwen3:1.7b qwen3:4b qwen3:8b
     uv run python scripts/run_banking77.py --mode free --per-class 10
     uv run python scripts/run_banking77.py --think --models qwen3.5:2b qwen3.5:4b --per-class 5
+    uv run python scripts/run_banking77.py --effort low --models gpt-oss:20b --per-class 5
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ import pandas as pd
 from slm import RESULTS_DIR
 from slm.data import load_banking77
 from slm.evaluation import OUTPUT_MODES, LLMClassifier, evaluate, score, stratified_subset
-from slm.inference import THINKING_OPTIONS, OllamaBackend, params_in_billions
+from slm.inference import EFFORT_OPTIONS, THINKING_OPTIONS, OllamaBackend, params_in_billions
 
 DEFAULT_MODELS = ["qwen3.5:0.8b", "qwen3.5:2b", "qwen3.5:4b", "qwen3.5:9b"]
 OUT_DIR = RESULTS_DIR / "banking77"
@@ -30,6 +31,9 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--workers", type=int, default=4, help="parallel requests (see OLLAMA_NUM_PARALLEL)")
     parser.add_argument("--think", action="store_true", help="enable reasoning mode (uses THINKING_OPTIONS sampling)")
+    parser.add_argument("--effort", choices=("low", "medium", "high"),
+                        help="reasoning effort for models that support it, e.g. gpt-oss (uses EFFORT_OPTIONS)")
+    parser.add_argument("--logprobs", action="store_true", help="record the probability of the predicted label")
     parser.add_argument("--no-pull", action="store_true", help="fail instead of pulling missing models")
     args = parser.parse_args()
 
@@ -38,11 +42,15 @@ def main() -> None:
     if args.per_class:
         test = stratified_subset(test, args.per_class, seed=args.seed)
 
-    run_name = f"{args.mode}_{'think' if args.think else 'no-think'}"
-    options = THINKING_OPTIONS if args.think else {}
+    if args.effort:
+        run_name, think, options = f"{args.mode}_effort-{args.effort}", args.effort, EFFORT_OPTIONS
+    elif args.think:
+        run_name, think, options = f"{args.mode}_think", True, THINKING_OPTIONS
+    else:
+        run_name, think, options = f"{args.mode}_no-think", False, {}
     rows = []
     for model in args.models:
-        backend = OllamaBackend(model, think=args.think, **options)
+        backend = OllamaBackend(model, think=think, top_logprobs=20 if args.logprobs else 0, **options)
         if args.no_pull:
             backend.ensure_model(pull=False)
         classifier = LLMClassifier(backend, dataset.labels, mode=args.mode)

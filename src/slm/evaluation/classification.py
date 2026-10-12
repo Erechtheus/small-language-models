@@ -13,6 +13,7 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score
 from tqdm.auto import tqdm
 
+from slm.evaluation.calibration import label_probability
 from slm.inference import OllamaBackend
 
 INVALID = "<invalid>"
@@ -33,6 +34,12 @@ ANSWER_FORMATS: dict[OutputMode, str] = {
     "free": "Answer with the name of the intent only, exactly as written in the list above.",
 }
 
+# asking for a verbalized confidence along with the label (structured and json mode)
+CONFIDENCE_FORMAT = (
+    'Answer with a JSON object of the form {"label": "<intent>", "confidence": <0-100>}, where confidence '
+    "is the probability in percent that your answer is correct."
+)
+
 
 class LLMClassifier:
     """Classifies a text into one of a fixed label set.
@@ -43,15 +50,23 @@ class LLMClassifier:
       valid labels can be generated.
     * ``json``: the output is guaranteed to be valid JSON, but the label inside is free text.
     * ``free``: no constraint at all; the answer is plain text and has to be mapped to a label.
+
+    With ``confidence=True`` the model also states how likely its answer is correct (0-100).
+    If the backend returns token log-probabilities, the probability of the generated label is
+    recorded as ``label_prob``.
     """
 
-    def __init__(self, backend: OllamaBackend, labels: list[str], mode: OutputMode = "structured"):
+    def __init__(self, backend: OllamaBackend, labels: list[str], mode: OutputMode = "structured",
+                 confidence: bool = False):
+        if confidence and mode == "free":
+            raise ValueError("a stated confidence needs a JSON answer (structured or json mode)")
         self.backend = backend
         self.labels = labels
         self.mode = mode
+        self.confidence = confidence
         self.system_prompt = SYSTEM_PROMPT.format(
             labels="\n".join(f"- {label}" for label in labels),
-            answer_format=ANSWER_FORMATS[mode],
+            answer_format=CONFIDENCE_FORMAT if confidence else ANSWER_FORMATS[mode],
         )
         self.format = {
             "structured": {
@@ -62,6 +77,9 @@ class LLMClassifier:
             "json": "json",
             "free": None,
         }[mode]
+        if confidence and mode == "structured":
+            self.format["properties"]["confidence"] = {"type": "integer", "minimum": 0, "maximum": 100}
+            self.format["required"].append("confidence")
 
     def predict(self, text: str) -> dict:
         messages = [
@@ -81,7 +99,19 @@ class LLMClassifier:
         }
         if completion.thinking:
             record["thinking"] = completion.thinking
+        if self.confidence:
+            record["stated_confidence"] = self._stated_confidence(completion.content)
+        if completion.logprobs and strict != INVALID:
+            record["label_prob"] = label_probability(completion.content, completion.logprobs, self.labels)
         return record
+
+    @staticmethod
+    def _stated_confidence(content: str) -> float | None:
+        try:
+            value = json.loads(content)["confidence"]
+        except (json.JSONDecodeError, KeyError, TypeError):
+            return None
+        return float(value) if isinstance(value, (int, float)) else None
 
     def parse(self, content: str) -> tuple[str, str]:
         """Map the raw model output to a label, once strictly and once leniently.

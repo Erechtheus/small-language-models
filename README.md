@@ -56,3 +56,21 @@ proposes instructions for the small task model).
 
 * Notebook: `notebooks/03_banking77_dspy.ipynb`
 * Script: `uv run python scripts/run_dspy_banking77.py --task-model qwen3.5:2b --prompt-model qwen3.5:9b`
+
+### 4. Calibration: does a small model know when it is wrong?
+
+Three confidence signals: the confidence the model states in its answer, the probability of the generated
+label (token log-probabilities, renormalized over the labels allowed by the schema) and the agreement of
+10 sampled answers. Compared with reliability diagrams, ECE and AUROC, and used to route uncertain queries
+of `qwen3.5:4b` to `qwen3.6:35b-a3b` (cascade).
+
+* Notebook: `notebooks/04_banking77_calibration.ipynb`
+* Script: `uv run python scripts/run_calibration.py --signal {label_prob,stated,sampling}`
+
+### 5. Reasoning effort with gpt-oss
+
+`gpt-oss:20b` (21B parameters, 3.6B active) with reasoning effort low, medium and high, compared with the
+Qwen ladder.
+
+* Notebook: `notebooks/05_banking77_reasoning_effort.ipynb`
+* Script: `uv run python scripts/run_banking77.py --models gpt-oss:20b --effort {low,medium,high} --per-class 5 --logprobs`

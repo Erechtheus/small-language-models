@@ -1,3 +1,9 @@
-from slm.inference.ollama_backend import THINKING_OPTIONS, Completion, OllamaBackend, params_in_billions
+from slm.inference.ollama_backend import (
+    EFFORT_OPTIONS,
+    THINKING_OPTIONS,
+    Completion,
+    OllamaBackend,
+    params_in_billions,
+)
 
-__all__ = ["THINKING_OPTIONS", "Completion", "OllamaBackend", "params_in_billions"]
+__all__ = ["EFFORT_OPTIONS", "THINKING_OPTIONS", "Completion", "OllamaBackend", "params_in_billions"]
