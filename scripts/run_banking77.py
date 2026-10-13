@@ -33,6 +33,8 @@ def main() -> None:
     parser.add_argument("--think", action="store_true", help="enable reasoning mode (uses THINKING_OPTIONS sampling)")
     parser.add_argument("--effort", choices=("low", "medium", "high"),
                         help="reasoning effort for models that support it, e.g. gpt-oss (uses EFFORT_OPTIONS)")
+    parser.add_argument("--explanation", choices=("before", "after"),
+                        help="structured mode: a short reason before or after the label")
     parser.add_argument("--logprobs", action="store_true", help="record the probability of the predicted label")
     parser.add_argument("--no-pull", action="store_true", help="fail instead of pulling missing models")
     args = parser.parse_args()
@@ -48,12 +50,15 @@ def main() -> None:
         run_name, think, options = f"{args.mode}_think", True, THINKING_OPTIONS
     else:
         run_name, think, options = f"{args.mode}_no-think", False, {}
+    if args.explanation:
+        run_name = run_name.replace(args.mode, f"{args.mode}-reason-{args.explanation}", 1)
+        options = {**options, "num_predict": 256}  # safety cap; the reason itself is limited to 300 characters
     rows = []
     for model in args.models:
         backend = OllamaBackend(model, think=think, top_logprobs=20 if args.logprobs else 0, **options)
         if args.no_pull:
             backend.ensure_model(pull=False)
-        classifier = LLMClassifier(backend, dataset.labels, mode=args.mode)
+        classifier = LLMClassifier(backend, dataset.labels, mode=args.mode, explanation=args.explanation)
 
         cache_file = OUT_DIR / run_name / f"{model.replace(':', '_').replace('/', '_')}.jsonl"
         results = evaluate(classifier, test, cache_file=cache_file, workers=args.workers)

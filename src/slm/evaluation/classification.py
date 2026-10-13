@@ -40,6 +40,20 @@ CONFIDENCE_FORMAT = (
     "is the probability in percent that your answer is correct."
 )
 
+# asking for a short explanation before or after the label (structured mode)
+Explanation = Literal["before", "after"]
+EXPLANATION_FORMATS: dict[Explanation, str] = {
+    "before": (
+        'Answer with a JSON object of the form {"reason": "<one or two sentences>", "label": "<intent>"}: first '
+        "explain briefly which intent fits the message and why, then give the intent."
+    ),
+    "after": (
+        'Answer with a JSON object of the form {"label": "<intent>", "reason": "<one or two sentences>"}: first '
+        "give the intent, then explain briefly why it fits the message."
+    ),
+}
+MAX_REASON_CHARS = 300
+
 
 class LLMClassifier:
     """Classifies a text into one of a fixed label set.
@@ -52,21 +66,30 @@ class LLMClassifier:
     * ``free``: no constraint at all; the answer is plain text and has to be mapped to a label.
 
     With ``confidence=True`` the model also states how likely its answer is correct (0-100).
+    With ``explanation="before"`` the model writes a short reason before the label (a small chain of thought
+    inside the JSON); with ``"after"`` the label is already fixed when the reason is written.
     If the backend returns token log-probabilities, the probability of the generated label is
     recorded as ``label_prob``.
     """
 
     def __init__(self, backend: OllamaBackend, labels: list[str], mode: OutputMode = "structured",
-                 confidence: bool = False):
+                 confidence: bool = False, explanation: Explanation | None = None):
         if confidence and mode == "free":
             raise ValueError("a stated confidence needs a JSON answer (structured or json mode)")
+        if explanation and (mode != "structured" or confidence):
+            raise ValueError("an explanation is only supported in structured mode without confidence")
         self.backend = backend
         self.labels = labels
         self.mode = mode
         self.confidence = confidence
+        self.explanation = explanation
+        answer_format = ANSWER_FORMATS[mode]
+        if confidence:
+            answer_format = CONFIDENCE_FORMAT
+        elif explanation:
+            answer_format = EXPLANATION_FORMATS[explanation]
         self.system_prompt = SYSTEM_PROMPT.format(
-            labels="\n".join(f"- {label}" for label in labels),
-            answer_format=CONFIDENCE_FORMAT if confidence else ANSWER_FORMATS[mode],
+            labels="\n".join(f"- {label}" for label in labels), answer_format=answer_format
         )
         self.format = {
             "structured": {
@@ -80,6 +103,13 @@ class LLMClassifier:
         if confidence and mode == "structured":
             self.format["properties"]["confidence"] = {"type": "integer", "minimum": 0, "maximum": 100}
             self.format["required"].append("confidence")
+        if explanation:
+            # the schema fixes the order of the keys, and with it whether the reason can influence the label
+            reason = {"type": "string", "maxLength": MAX_REASON_CHARS}
+            label = self.format["properties"]["label"]
+            order = ["reason", "label"] if explanation == "before" else ["label", "reason"]
+            self.format["properties"] = {key: {"reason": reason, "label": label}[key] for key in order}
+            self.format["required"] = order
 
     def predict(self, text: str) -> dict:
         messages = [
