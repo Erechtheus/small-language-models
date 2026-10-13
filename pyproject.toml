@@ -15,6 +15,10 @@ dependencies = [
 
 [dependency-groups]
 dev = ["jupyterlab>=4.2", "ipykernel>=6.29"]
+finetune = [
+    "flash-linear-attention>=0.5.2",
+    "unsloth>=2026.10.4",
+]
 
 [build-system]
 requires = ["hatchling"]

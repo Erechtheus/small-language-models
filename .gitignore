@@ -220,3 +220,10 @@ __marimo__/
 .streamlit/secrets.toml
 data/
 results/**/*.jsonl
+
+# fine-tuned LoRA adapters and trainer checkpoints (large; recreate with scripts/finetune_banking77.py)
+results/banking77/finetune/*/*_adapter/
+results/banking77/finetune/*/checkpoints/
+
+# compiled kernels written by Unsloth into the working directory
+unsloth_compiled_cache/
