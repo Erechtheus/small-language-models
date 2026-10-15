@@ -6,6 +6,7 @@ Examples:
     uv run python scripts/run_banking77.py --mode free --per-class 10
     uv run python scripts/run_banking77.py --think --models qwen3.5:2b qwen3.5:4b --per-class 5
     uv run python scripts/run_banking77.py --effort low --models gpt-oss:20b --per-class 5
+    uv run python scripts/run_banking77.py --effort none --models gpt-oss:20b --per-class 5
 """
 
 from __future__ import annotations
@@ -31,8 +32,9 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--workers", type=int, default=4, help="parallel requests (see OLLAMA_NUM_PARALLEL)")
     parser.add_argument("--think", action="store_true", help="enable reasoning mode (uses THINKING_OPTIONS sampling)")
-    parser.add_argument("--effort", choices=("low", "medium", "high"),
-                        help="reasoning effort for models that support it, e.g. gpt-oss (uses EFFORT_OPTIONS)")
+    parser.add_argument("--effort", choices=("none", "low", "medium", "high"),
+                        help="reasoning effort for models that support it, e.g. gpt-oss (uses EFFORT_OPTIONS); "
+                             "'none' skips gpt-oss's reasoning with an empty reasoning message")
     parser.add_argument("--explanation", choices=("before", "after"),
                         help="structured mode: a short reason before or after the label")
     parser.add_argument("--logprobs", action="store_true", help="record the probability of the predicted label")

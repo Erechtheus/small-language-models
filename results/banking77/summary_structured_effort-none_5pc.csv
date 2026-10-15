@@ -1,0 +1,2 @@
+model,params_b,n,accuracy,macro_f1,invalid_rate,accuracy_lenient,invalid_rate_lenient,mean_latency_s,p95_latency_s,mean_prompt_tokens,mean_completion_tokens,truncated_rate
+gpt-oss:20b,20.0,385,0.7402597402597403,0.7284123884773235,0.0,0.7402597402597403,0.0,6.467467105344343,7.4043793047894715,598.864935064935,9.083116883116883,0.0
